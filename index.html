@@ -1958,6 +1958,28 @@ footer{ background:#1c1610; color:rgba(247,241,230,.82); padding:clamp(64px,8vw,
     msg += "\n\nPlease confirm my slot and share payment details. Thank you!";
 
     window.open("https://wa.me/" + d.brand.whatsappNumber + "?text=" + encodeURIComponent(msg), "_blank");
+
+    /* ---- Email notification to spa owner via Formspree ---- */
+    const emailData = {
+      _subject: "New Booking: " + service + " — " + name,
+      name: name,
+      gender: gender,
+      service: service,
+      date: niceDate,
+      time: niceTime || "Not specified",
+    };
+    if(isGift){
+      emailData.birthday_for = recipient;
+      emailData.relationship = relation;
+      emailData.birthday_date = fmt(bday);
+    }
+    if(notes) emailData.notes = notes;
+
+    fetch("https://formspree.io/f/mgojgnwa", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify(emailData),
+    }).catch(() => {}); /* silent — WhatsApp is the primary channel */
   });
 
   /* ---- Footer ---- */
