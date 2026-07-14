@@ -1541,7 +1541,7 @@ footer{ background:#1c1610; color:rgba(247,241,230,.82); padding:clamp(64px,8vw,
 
 /* ---------------- Cart: floating button ---------------- */
 .cart-fab{
-  position:fixed; bottom:130px; right:26px; z-index:60;
+  position:fixed; bottom:26px; right:26px; z-index:60;
   width:60px; height:60px; border-radius:50%;
   background:var(--forest); border:2px solid var(--gold-soft);
   color:var(--cream); cursor:pointer;
@@ -1621,39 +1621,21 @@ footer{ background:#1c1610; color:rgba(247,241,230,.82); padding:clamp(64px,8vw,
 .cart-checkout-note{ font-size:.76rem; color:var(--ink-soft); text-align:center; margin-top:12px; font-weight:300; }
 
 @media (max-width:480px){
-  .cart-fab{ width:52px; height:52px; bottom:110px; right:18px; font-size:1.2rem; }
+  .cart-fab{ width:52px; height:52px; bottom:18px; right:18px; font-size:1.2rem; }
   .cart-drawer{ width:100%; }
-  .review-fab-group{ bottom:18px; right:18px; }
-  .review-fab{ width:52px; height:52px; font-size:1.15rem; }
-  .review-fab-label{ font-size:.6rem; padding:3px 9px; }
 }
 
-/* ---------------- Review: floating button + label ---------------- */
-.review-fab-group{
-  position:fixed; bottom:26px; right:26px; z-index:60;
-  display:flex; flex-direction:column; align-items:center; gap:7px;
+/* ---------------- Footer: review call-to-action ---------------- */
+.foot-review{ margin-top:22px; padding-top:18px; border-top:1px dashed rgba(217,194,154,.25); }
+.foot-review-label{ font-size:.84rem; color:rgba(247,241,230,.7); font-weight:300; margin-bottom:12px; }
+.foot-review-btn{
+  font-family:var(--font-body); font-size:.76rem; font-weight:600;
+  letter-spacing:.1em; text-transform:uppercase; cursor:pointer;
+  background:transparent; border:1px solid var(--gold); color:var(--gold-soft);
+  border-radius:999px; padding:11px 22px;
+  transition:all .3s var(--ease);
 }
-.review-fab-label{
-  font-family:var(--font-body); font-size:.66rem; font-weight:700;
-  letter-spacing:.16em; text-transform:uppercase; color:var(--gold);
-  background:var(--white); padding:5px 12px; border-radius:999px;
-  border:1px solid var(--gold-soft); box-shadow:0 6px 16px rgba(0,0,0,.14);
-  white-space:nowrap; user-select:none;
-  animation:labelFloat 3.2s ease-in-out infinite;
-}
-@keyframes labelFloat{
-  0%,100%{ transform:translateY(0); }
-  50%{ transform:translateY(-3px); }
-}
-.review-fab{
-  width:56px; height:56px; border-radius:50%;
-  background:var(--white); border:2px solid var(--gold);
-  color:var(--gold); cursor:pointer;
-  display:grid; place-items:center; font-size:1.3rem;
-  box-shadow:0 10px 26px rgba(0,0,0,.2);
-  transition:transform .3s var(--ease);
-}
-.review-fab:hover{ transform:scale(1.08); }
+.foot-review-btn:hover{ background:var(--gold); color:var(--white); }
 
 /* ---------------- Review: drawer (reuses cart-overlay for the dim backdrop) ---------------- */
 .review-drawer{
@@ -1712,11 +1694,7 @@ footer{ background:#1c1610; color:rgba(247,241,230,.82); padding:clamp(64px,8vw,
   </div>
 </aside>
 
-<!-- ============ REVIEW: floating button + drawer ============ -->
-<div class="review-fab-group" id="review-fab-group">
-  <span class="review-fab-label">Review</span>
-  <button class="review-fab" id="review-fab" aria-label="Leave a review">★</button>
-</div>
+<!-- ============ REVIEW: drawer (opened from the footer) ============ -->
 <aside class="review-drawer" id="review-drawer">
   <div class="cart-head">
     <h3>Leave a Review</h3>
@@ -1978,6 +1956,10 @@ footer{ background:#1c1610; color:rgba(247,241,230,.82); padding:clamp(64px,8vw,
       <div class="foot-col reveal">
         <h3>Working Hours</h3>
         <ul id="foot-hours"></ul>
+        <div class="foot-review">
+          <p class="foot-review-label">Visited us recently?</p>
+          <button class="foot-review-btn" id="footer-review-btn">★ Leave a Review</button>
+        </div>
       </div>
     </div>
     <div class="foot-bar" id="foot-bar"></div>
@@ -2131,7 +2113,7 @@ footer{ background:#1c1610; color:rgba(247,241,230,.82); padding:clamp(64px,8vw,
      ================================================================ */
   function openReview(){ reviewDrawer.classList.add("open"); cartOverlay.classList.add("open"); }
   function closeReview(){ reviewDrawer.classList.remove("open"); cartOverlay.classList.remove("open"); }
-  $("review-fab").addEventListener("click", openReview);
+  $("footer-review-btn").addEventListener("click", openReview);
   $("review-close").addEventListener("click", closeReview);
 
   /* Service dropdown: every treatment + course + a couple of catch-alls */
