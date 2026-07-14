@@ -1194,6 +1194,11 @@ header.hero{
   transition:transform .3s var(--ease), background .3s;
 }
 .btn-gold:hover{ background:#9c783a; transform:translateY(-2px); }
+.btn-gold:disabled{
+  background:var(--cream-deep); color:var(--ink-soft); cursor:not-allowed;
+  box-shadow:none; opacity:.75;
+}
+.btn-gold:disabled:hover{ background:var(--cream-deep); transform:none; }
 .hero-quicklinks{ margin-top:22px; display:flex; gap:22px; justify-content:center; }
 .hero-quicklinks button{
   background:none; border:none; cursor:pointer;
@@ -1536,7 +1541,7 @@ footer{ background:#1c1610; color:rgba(247,241,230,.82); padding:clamp(64px,8vw,
 
 /* ---------------- Cart: floating button ---------------- */
 .cart-fab{
-  position:fixed; bottom:26px; right:26px; z-index:60;
+  position:fixed; bottom:130px; right:26px; z-index:60;
   width:60px; height:60px; border-radius:50%;
   background:var(--forest); border:2px solid var(--gold-soft);
   color:var(--cream); cursor:pointer;
@@ -1616,9 +1621,74 @@ footer{ background:#1c1610; color:rgba(247,241,230,.82); padding:clamp(64px,8vw,
 .cart-checkout-note{ font-size:.76rem; color:var(--ink-soft); text-align:center; margin-top:12px; font-weight:300; }
 
 @media (max-width:480px){
-  .cart-fab{ width:52px; height:52px; bottom:18px; right:18px; font-size:1.2rem; }
+  .cart-fab{ width:52px; height:52px; bottom:110px; right:18px; font-size:1.2rem; }
   .cart-drawer{ width:100%; }
+  .review-fab-group{ bottom:18px; right:18px; }
+  .review-fab{ width:52px; height:52px; font-size:1.15rem; }
+  .review-fab-label{ font-size:.6rem; padding:3px 9px; }
 }
+
+/* ---------------- Review: floating button + label ---------------- */
+.review-fab-group{
+  position:fixed; bottom:26px; right:26px; z-index:60;
+  display:flex; flex-direction:column; align-items:center; gap:7px;
+}
+.review-fab-label{
+  font-family:var(--font-body); font-size:.66rem; font-weight:700;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--gold);
+  background:var(--white); padding:5px 12px; border-radius:999px;
+  border:1px solid var(--gold-soft); box-shadow:0 6px 16px rgba(0,0,0,.14);
+  white-space:nowrap; user-select:none;
+  animation:labelFloat 3.2s ease-in-out infinite;
+}
+@keyframes labelFloat{
+  0%,100%{ transform:translateY(0); }
+  50%{ transform:translateY(-3px); }
+}
+.review-fab{
+  width:56px; height:56px; border-radius:50%;
+  background:var(--white); border:2px solid var(--gold);
+  color:var(--gold); cursor:pointer;
+  display:grid; place-items:center; font-size:1.3rem;
+  box-shadow:0 10px 26px rgba(0,0,0,.2);
+  transition:transform .3s var(--ease);
+}
+.review-fab:hover{ transform:scale(1.08); }
+
+/* ---------------- Review: drawer (reuses cart-overlay for the dim backdrop) ---------------- */
+.review-drawer{
+  position:fixed; top:0; right:0; bottom:0; z-index:71;
+  width:min(460px, 100%); background:var(--cream);
+  transform:translateX(100%); transition:transform .4s var(--ease);
+  display:flex; flex-direction:column;
+  box-shadow:-10px 0 40px rgba(0,0,0,.25);
+}
+.review-drawer.open{ transform:translateX(0); }
+.review-body{ flex:1; overflow-y:auto; padding:10px 26px 26px; }
+.review-sent{
+  text-align:center; padding:70px 20px;
+  font-family:var(--font-display); font-style:italic; color:var(--forest); font-size:1.15rem;
+}
+
+/* Star rating */
+.star-rating{ display:flex; gap:6px; }
+.star-btn{
+  background:none; border:none; cursor:pointer; padding:0;
+  font-size:1.9rem; line-height:1; color:var(--cream-deep);
+  transition:color .15s, transform .15s;
+}
+.star-btn.filled{ color:var(--gold); }
+.star-btn:hover{ transform:scale(1.12); }
+
+/* Recommend pills */
+.pill-group{ display:flex; gap:10px; }
+.pill-btn{
+  flex:1; font-family:var(--font-body); font-size:.8rem; font-weight:600;
+  letter-spacing:.06em; padding:11px 14px; border-radius:999px; cursor:pointer;
+  border:1px solid var(--gold-soft); background:var(--white); color:var(--ink-soft);
+  transition:all .25s var(--ease);
+}
+.pill-btn.selected{ background:var(--forest); border-color:var(--forest); color:var(--cream); }
 </style>
 </head>
 
@@ -1639,6 +1709,65 @@ footer{ background:#1c1610; color:rgba(247,241,230,.82); padding:clamp(64px,8vw,
     <div class="cart-total-row"><span>Total</span><span id="cart-total">₦0</span></div>
     <button class="btn-gold" id="cart-checkout" style="width:100%;">Checkout via WhatsApp</button>
     <p class="cart-checkout-note">Sends your full order to us on WhatsApp to confirm availability, timing and payment.</p>
+  </div>
+</aside>
+
+<!-- ============ REVIEW: floating button + drawer ============ -->
+<div class="review-fab-group" id="review-fab-group">
+  <span class="review-fab-label">Review</span>
+  <button class="review-fab" id="review-fab" aria-label="Leave a review">★</button>
+</div>
+<aside class="review-drawer" id="review-drawer">
+  <div class="cart-head">
+    <h3>Leave a Review</h3>
+    <button class="cart-close" id="review-close" aria-label="Close review form">✕</button>
+  </div>
+  <div class="review-body">
+    <div id="review-form-wrap">
+      <div class="book-error" id="review-error"></div>
+
+      <div class="field">
+        <label for="rv-name">Your name <span class="lbl-hint">(optional)</span></label>
+        <input id="rv-name" type="text" placeholder="e.g. Adaeze Okafor">
+      </div>
+
+      <div class="field">
+        <label for="rv-service">Which service did you experience? <span class="lbl-hint">(optional)</span></label>
+        <select id="rv-service"><option value="">Select…</option></select>
+      </div>
+
+      <div class="field">
+        <label>Overall satisfaction</label>
+        <div class="star-rating" data-field="overall"></div>
+      </div>
+
+      <div class="field">
+        <label>Staff friendliness <span class="lbl-hint">(optional)</span></label>
+        <div class="star-rating" data-field="friendliness"></div>
+      </div>
+
+      <div class="field">
+        <label>Cleanliness & ambiance <span class="lbl-hint">(optional)</span></label>
+        <div class="star-rating" data-field="cleanliness"></div>
+      </div>
+
+      <div class="field">
+        <label>Would you recommend us to a friend?</label>
+        <div class="pill-group" id="rv-recommend">
+          <button type="button" class="pill-btn" data-val="Yes">Yes</button>
+          <button type="button" class="pill-btn" data-val="Maybe">Maybe</button>
+          <button type="button" class="pill-btn" data-val="No">No</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="rv-comments">Anything you'd like us to know? <span class="lbl-hint">(optional)</span></label>
+        <textarea id="rv-comments" rows="3" placeholder="What stood out, or what we could do better…"></textarea>
+      </div>
+
+      <button class="btn-gold" id="rv-submit" style="width:100%;">Send Review</button>
+    </div>
+    <div class="review-sent" id="review-sent" hidden>Thank you — your review has been sent. 🌸</div>
   </div>
 </aside>
 
@@ -1915,6 +2044,10 @@ footer{ background:#1c1610; color:rgba(247,241,230,.82); padding:clamp(64px,8vw,
     const total = cart.reduce((a,c) => a + c.priceNum * c.qty, 0);
     $("cart-total").textContent = "₦" + total.toLocaleString("en-NG");
 
+    const checkoutBtn = $("cart-checkout");
+    checkoutBtn.disabled = cart.length === 0;
+    checkoutBtn.textContent = cart.length === 0 ? "Add Items to Checkout" : "Checkout via WhatsApp";
+
     const itemsEl = $("cart-items");
     if(cart.length === 0){
       itemsEl.innerHTML = '<div class="cart-empty">Your cart is empty.<br>Browse Services, Products or Courses to add items.</div>';
@@ -1954,13 +2087,14 @@ footer{ background:#1c1610; color:rgba(247,241,230,.82); padding:clamp(64px,8vw,
     setTimeout(() => { btn.textContent = original; btn.classList.remove("added"); }, 1200);
   });
 
-  /* Cart drawer open/close */
-  const cartDrawer = $("cart-drawer"), cartOverlay = $("cart-overlay");
+  /* Cart drawer open/close (overlay is shared with the review drawer) */
+  const cartDrawer = $("cart-drawer"), cartOverlay = $("cart-overlay"), reviewDrawer = $("review-drawer");
   function openCart(){ cartDrawer.classList.add("open"); cartOverlay.classList.add("open"); }
   function closeCart(){ cartDrawer.classList.remove("open"); cartOverlay.classList.remove("open"); }
+  function closeAllDrawers(){ closeCart(); closeReview(); }
   $("cart-fab").addEventListener("click", openCart);
   $("cart-close").addEventListener("click", closeCart);
-  cartOverlay.addEventListener("click", closeCart);
+  cartOverlay.addEventListener("click", closeAllDrawers);
 
   /* Checkout: build one WhatsApp order message + email notification */
   $("cart-checkout").addEventListener("click", () => {
@@ -1990,6 +2124,113 @@ footer{ background:#1c1610; color:rgba(247,241,230,.82); padding:clamp(64px,8vw,
   });
 
   renderCart(); // initial paint from any saved cart
+
+  /* ================================================================
+     REVIEW FORM — private feedback, emailed only (never shown on
+     the site). Nothing here needs editing.
+     ================================================================ */
+  function openReview(){ reviewDrawer.classList.add("open"); cartOverlay.classList.add("open"); }
+  function closeReview(){ reviewDrawer.classList.remove("open"); cartOverlay.classList.remove("open"); }
+  $("review-fab").addEventListener("click", openReview);
+  $("review-close").addEventListener("click", closeReview);
+
+  /* Service dropdown: every treatment + course + a couple of catch-alls */
+  const rvServiceSel = $("rv-service");
+  d.services.forEach(cat => {
+    const og = document.createElement("optgroup");
+    og.label = cat.label;
+    cat.items.forEach(it => {
+      const o = document.createElement("option");
+      o.value = it.name; o.textContent = it.name;
+      og.appendChild(o);
+    });
+    rvServiceSel.appendChild(og);
+  });
+  const cog = document.createElement("optgroup");
+  cog.label = "Courses";
+  d.courses.forEach(t => {
+    const o = document.createElement("option");
+    o.value = t.track; o.textContent = t.track;
+    cog.appendChild(o);
+  });
+  rvServiceSel.appendChild(cog);
+  ["Product purchase", "Something else"].forEach(label => {
+    const o = document.createElement("option");
+    o.value = label; o.textContent = label;
+    rvServiceSel.appendChild(o);
+  });
+
+  /* Star ratings: build 5 clickable stars per .star-rating group */
+  const ratings = { overall: 0, friendliness: 0, cleanliness: 0 };
+  document.querySelectorAll(".star-rating").forEach(group => {
+    const field = group.dataset.field;
+    for(let i = 1; i <= 5; i++){
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "star-btn"; b.textContent = "★"; b.dataset.val = i;
+      b.setAttribute("aria-label", i + " star" + (i>1?"s":""));
+      b.addEventListener("click", () => {
+        ratings[field] = i;
+        [...group.children].forEach((s,idx) => s.classList.toggle("filled", idx < i));
+      });
+      group.appendChild(b);
+    }
+  });
+
+  /* Recommend pills */
+  let recommendVal = "";
+  document.querySelectorAll("#rv-recommend .pill-btn").forEach(b => {
+    b.addEventListener("click", () => {
+      recommendVal = b.dataset.val;
+      document.querySelectorAll("#rv-recommend .pill-btn").forEach(x => x.classList.toggle("selected", x === b));
+    });
+  });
+
+  /* Submit: validate, email via Formspree, show thank-you state */
+  $("rv-submit").addEventListener("click", () => {
+    const err = $("review-error");
+    if(ratings.overall === 0){
+      err.textContent = "Please give an overall star rating before sending.";
+      err.classList.add("show");
+      return;
+    }
+    err.classList.remove("show");
+
+    const name = $("rv-name").value.trim() || "Anonymous";
+    const service = rvServiceSel.value || "Not specified";
+    const comments = $("rv-comments").value.trim();
+    const stars = n => n ? "★".repeat(n) + "☆".repeat(5-n) + " (" + n + "/5)" : "Not rated";
+
+    fetch("https://formspree.io/f/mgojgnwa", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({
+        _subject: "New Review — " + ratings.overall + "/5 from " + name,
+        name: name,
+        service: service,
+        overall_rating: stars(ratings.overall),
+        staff_friendliness: stars(ratings.friendliness),
+        cleanliness_ambiance: stars(ratings.cleanliness),
+        would_recommend: recommendVal || "Not answered",
+        comments: comments || "(none)",
+      }),
+    }).catch(() => {});
+
+    $("review-form-wrap").hidden = true;
+    $("review-sent").hidden = false;
+
+    // reset for next time the drawer opens
+    setTimeout(() => {
+      $("rv-name").value = ""; $("rv-comments").value = "";
+      rvServiceSel.value = "";
+      ratings.overall = ratings.friendliness = ratings.cleanliness = 0;
+      document.querySelectorAll(".star-rating").forEach(g =>
+        [...g.children].forEach(s => s.classList.remove("filled")));
+      recommendVal = "";
+      document.querySelectorAll("#rv-recommend .pill-btn").forEach(x => x.classList.remove("selected"));
+      $("review-form-wrap").hidden = false;
+      $("review-sent").hidden = true;
+    }, 2500);
+  });
 
   /* ---- Logo: try the real file, fall back to the embedded copy ---- */
   function setLogos(src){ $("nav-logo").src = src; $("hero-logo").src = src; }
